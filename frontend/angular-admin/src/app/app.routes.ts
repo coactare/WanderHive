@@ -5,14 +5,17 @@ import { AuthGuard } from './shared/guards/auth.guard';
 export const routes: Routes = [
     {
         path: 'manage-catalog',
+        canActivate: [AuthGuard],
         loadChildren: () => import('../app/catalog/catalog.routes').then((m) => m.manageCatalogRoutes),
     },
     {
         path: 'add-catalog-item',
+        canActivate: [AuthGuard],
         loadChildren: () => import('../app/catalog/catalog.routes').then((m) => m.addCatalogRoutes),
     },
     {
         path: 'edit-catalog-item/:id',
+        canActivate: [AuthGuard],
         loadChildren: () => import('../app/catalog/catalog.routes').then((m) => m.editCatalogRoutes),
     },
     {
