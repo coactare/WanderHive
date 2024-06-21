@@ -1,0 +1,17 @@
+<div class="StyledPaginationdiv">
+  <p>
+    Showing <span>{{ (currentPage - 1) * catalogParams.pageSize + 1 }}</span> to
+    <span>{{ currentPage === pageCount ? count : currentPage * catalogParams.pageSize }}</span>
+    of <span>{{ count }}</span> results
+  </p>
+
+  <div class="Buttonsdiv">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">
+      <span>Previous</span>
+    </button>
+
+    <button (click)="nextPage()" [disabled]="currentPage === pageCount">
+      <span>Next</span>
+    </button>
+  </div>
+</div>

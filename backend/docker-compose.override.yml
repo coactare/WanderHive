@@ -1,0 +1,199 @@
+version: '3.4'
+
+services:
+
+  catalogdb:
+    container_name: catalogdb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+ 
+  basketdb:
+    container_name: basketdb
+    restart: always
+    ports:
+      - "6379:6379"
+
+# Connect to PGsql DB (DiscountDb) using host host.docker.internal
+# CREATE TABLE Coupon(Id SERIAL PRIMARY KEY, ProductName VARCHAR(500) NOT NULL, Description TEXT, Amount INT);
+# INSERT INTO Coupon(ProductName, Description, Amount) VALUES('Adidas Quick Force Indoor Badminton Shoes', 'Shoe Discount', 500);
+# INSERT INTO Coupon(ProductName, Description, Amount) VALUES('Yonex VCORE Pro 100 A Tennis Racquet (270gm, Strung)', 'Racquet Discount', 700);
+
+  discountdb:
+    container_name: discountdb
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=Password@1
+      - POSTGRES_DB=DiscountDb
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  
+      
+  orderdb:
+    container_name: orderdb
+    environment:
+      SA_PASSWORD: "@dministr@tor"
+      ACCEPT_EULA: "Y"
+    restart: always
+    ports:
+      - "1433:1433"
+ 
+
+  #username/password = guest/guest
+  rabbitmq:
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+   
+  catalog.api:
+   container_name: catalog.api
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_HTTP_PORTS=8080
+     - ASPNETCORE_HTTPS_PORTS=8081
+     - "DatabaseSettings__ConnectionString=mongodb://catalogdb:27017"
+     - "DatabaseSettings__DatabaseName=CatalogDb"
+     - "DatabaseSettings__CollectionName=Products"
+     - "DatabaseSettings__BrandsCollection=Brands"
+     - "DatabaseSettings__TypesCollection=Types"
+     - "ElasticConfiguration__Uri=http://elasticsearch:9200"
+   depends_on:
+     - catalogdb
+   ports:
+      - "6004:8080"
+      - "6063:8081"
+
+  basket.api:
+   container_name: basket.api
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_HTTP_PORTS=8080
+     - ASPNETCORE_HTTPS_PORTS=8081
+     - "CacheSettings__ConnectionString=basketdb:6379"
+     - GrpcSettings__DiscountUrl=https://discount.api:8081     
+     - "EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672"
+     - "ElasticConfiguration__Uri=http://elasticsearch:9200"
+   depends_on:
+     - basketdb
+     - rabbitmq
+     - identityserver
+     - discount.api   
+   ports:
+      - "6001:8080"
+      - "6061:8081"
+   volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  pgadmin:
+   container_name: pgadmin
+   environment:
+     - PGADMIN_DEFAULT_EMAIL=admin@eShopping.net
+     - PGADMIN_DEFAULT_PASSWORD=Password@1
+   restart: always
+   ports:
+     - "5050:80"
+   volumes:
+     - pgadmin_data:/root/.pgadmin
+
+  discount.api:
+   container_name: discount.api
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_HTTP_PORTS=8080
+     - ASPNETCORE_HTTPS_PORTS=8081
+     - "DatabaseSettings__ConnectionString=Server=discountdb;Port=5432;Database=DiscountDb;User Id=admin;Password=Password@1;"
+     - "ElasticConfiguration__Uri=http://elasticsearch:9200"          
+   depends_on:
+     - discountdb
+   ports:
+     - "6002:8080"
+     - "6062:8081"
+   volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+   
+      
+  identityserver:
+   container_name: identityserver
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_HTTP_PORTS=8080
+     - ASPNETCORE_HTTPS_PORTS=8081 
+   ports:
+     - "6003:8080"
+     - "9009:8081"
+   volumes:
+     - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+     - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro 
+
+
+  ordering.api:
+   container_name: ordering.api
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_HTTP_PORTS=8080
+     - ASPNETCORE_HTTPS_PORTS=8081
+     - "ConnectionStrings__OrderingConnectionString=server=orderdb,1433;Database=OrderDb;User Id=sa;Password=@dministr@tor"
+     - "EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672"
+     - "ElasticConfiguration__Uri=http://elasticsearch:9200"
+   depends_on:
+     - orderdb
+     - rabbitmq
+   ports:
+     - "6005:8080"
+     - "6065:8081"
+  
+  ocelot.apigateway:
+   container_name: ocelot.apigateway
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_HTTP_PORTS=8080
+     - ASPNETCORE_HTTPS_PORTS=8081 
+   depends_on:
+     - identityserver
+     - catalog.api
+     - basket.api
+     - discount.api
+     - ordering.api
+   ports:
+     - "9012:8080"
+     - "9010:8081" 
+
+  # username/password = admin/Password@123
+  portainer:
+   container_name: portainer
+   restart: always
+   ports:
+     - "9090:9000"
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - portainer_data:/data
+
+
+  elasticsearch:
+   container_name: elasticsearch
+   environment:
+     #- xpack.monitoring.enabled=true
+     - xpack.security.enabled=false
+     - discovery.type=single-node
+   ports:
+     - "9200:9200"
+   volumes:
+     - elasticsearch-data:/usr/share/elasticsearch/data
+
+  kibana:
+   container_name: kibana
+   environment:
+     - ELASTICSEARCH_URL=http://localhost:9200
+   depends_on:
+     - elasticsearch
+   ports:
+     - "5601:5601"  

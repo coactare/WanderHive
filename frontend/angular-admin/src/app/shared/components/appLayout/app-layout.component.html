@@ -1,0 +1,11 @@
+<div *ngIf="isUserAuthenticated" class="styledLayoutDiv">
+    <mc-header></mc-header>
+    <mc-sidebar></mc-sidebar>
+    <main class="styledmain">
+        <div class="container">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>
+
+<router-outlet *ngIf="!isUserAuthenticated"></router-outlet>

@@ -1,0 +1,81 @@
+npm create vite@latest
+
+npm install --save-dev vite-plugin-eslint eslint-config-react-app eslint
+
+npm install styled-components
+
+
+body {
+  font-family: "Josefin Sans", sans-serif;
+  color: var(--color-grey-700);
+
+  transition: color 0.3s, background-color 0.3s;
+  min-height: 100vh;
+  line-height: 1.5;
+  font-size: 1.6rem;
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+
+npm install react-router-dom@6 OR npm i react-router-dom
+
+npm i react-icons
+
+npm i @tanstack/react-query
+
+npm i @tanstack/react-query-devtools
+
+👉 If you want to use React Query v5, there are only two small things to change in the project:
+    isLoading is now called isPending
+    The cacheTime option is now called gcTime
+
+
+npm install --save date-fns
+
+npm install react-hot-toast
+
+npm install react-hook-form
+
+npm i @axa-fr/react-oidc
+
+npm i recharts
+
+npm install redux react-redux
+
+npm install @reduxjs/toolkit
+
+npm install redux-thunk
+
+
+--------------From OLD
+
+npm create vite@latest
+
+npm install --save-dev vite-plugin-eslint eslint-config-react-app eslint
+
+npm install styled-components
+
+npm install react-router-dom@6 || npm i react-router-dom
+
+npm i react-icons
+
+npm i @tanstack/react-query
+
+npm i @tanstack/react-query-devtools
+
+👉 If you want to use React Query v5, there are only two small things to change in the project:
+    isLoading is now called isPending
+    The cacheTime option is now called gcTime
+
+
+npm install --save date-fns
+
+npm install react-hot-toast
+
+npm install react-hook-form
+
+npm i @axa-fr/react-oidc
+
+npm i recharts

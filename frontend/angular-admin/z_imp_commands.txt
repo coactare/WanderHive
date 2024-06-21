@@ -1,0 +1,67 @@
+---------------------------
+How to install Font-Awesome
+---------------------------
+
+1)
+npm install font-awesome --save
+
+2)
+
+"styles": [
+"../node_modules/font-awesome/css/font-awesome.css",
+"src/styles.css"
+],
+
+Sometimes, below worked better
+"styles": [
+    "node_modules/font-awesome/css/font-awesome.css",
+    "src/styles.css"
+],
+
+3)
+<i class="fa fa-user fa-5x"></i>
+<i class="fa fa-dashboard fa-5x"></i>
+<i class="fa fa-money fa-5x"></i>
+<i class="fa fa-home fa-5x"></i>
+<i class="fa fa-th fa-5x"></i>
+
+---------------------------
+Add Titillium Fonts in index.html and styles.css
+---------------------------
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap"
+    rel="stylesheet">
+
+
+body {
+  font-family: "Titillium Web", sans-serif;
+}
+
+---------------------------
+Add NgRx
+---------------------------
+npm i @ngrx/store
+
+npm i @ngrx/store-devtools
+
+npm i @ngrx/router-store
+
+npm i @ngrx/effects
+
+---------------------------
+Add Envs
+---------------------------
+npx -p @angular/cli@18 ng generate environments
+
+---------------------------
+Add Charts
+---------------------------
+npm install @swimlane/ngx-charts --save
+npm install @angular/cdk
+
+---------------------------
+Auth
+---------------------------
+npm install oidc-client --save

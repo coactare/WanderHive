@@ -1,0 +1,23 @@
+.styledmain {
+    padding: 0rem 4.8rem 6.4rem; /* top */ /* right */ /* bottom */ /* left is Same as right */
+    /* background-color: var(--color-grey-50); */
+    background-color: #eaeaea;
+}
+
+
+.styledLayoutDiv {   /* This is the container div */
+    display: grid;  /* This is turns it the container div into grid*/
+    grid-template-columns: 26rem 1fr; /* First column will contain sidebar with fixed width 26rem and rest will be flexible */
+    grid-template-rows: auto 1fr; /* auto for occupying the size of the content and rest space will be consumed with 1fr*/
+    height: 100vh; /* whole grid will displayed in whole height of view*/
+
+}
+
+.container {
+  max-width: 120rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+}
+

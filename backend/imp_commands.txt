@@ -1,0 +1,758 @@
+-------------------------------------------------------------
+-------------------------------------------------------------
+                        BACKEND
+-------------------------------------------------------------
+-------------------------------------------------------------
+* mkdir backend
+* cd backend
+* dotnet new sln -n WanderHive
+* dotnet new webapi -o src/AuctionService --use-controllers
+* dotnet sln add src/AuctionService
+
+* Clean Architecture Catalog Service
+    Core Will not have any dependency
+    Infrastructure will have Core and Application
+    Application will have Core reference
+    API will have Application and Infrastructure
+ 
+
+* in launchSettings.json change applicationUrl, to http://localhost:9000
+    remove "launchUrl": "swagger",
+    remove all profiles except http profile.
+
+* Add mondoDB Driver in Catalog.Core
+
+    dotnet add package MongoDB.Driver --version 2.23.1
+
+* Core project will have Entities, Contracts | Repositories
+
+* Infrastructure will implement Contracts | Repositories defined in Core
+    it will have Data folder for DBContext and Repositories
+
+
+
+*  dotnet new -i identityserver4.templates
+
+*  dotnet new is4inmem -n EShopping.Identity
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* remove app.UseHttpsRedirection(); from Program.cs
+
+* Created Entities folder and added cs files for creating tables
+
+* dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 7.0.13
+* dotnet add package Microsoft.EntityFrameworkCore.Design --version 7.0.13
+
+
+* create folder Data -> OasisContext.cs -> implement this class from DbContext class, following is the content. Type in DbSet is from Entities folder types.
+    namespace the_wild_oasis.Data
+    {
+        public class OasisContext : DbContext
+        {
+            public OasisContext(DbContextOptions options) : base(options)
+            {
+            }
+            public DbSet<Booking> Bookings { get; set; }
+            public DbSet<Cabin> Cabins { get; set; }
+            public DbSet<Guest> Guests { get; set; }
+            public DbSet<Setting> Setting { get; set; }
+        }
+    }
+
+* Add the following to the Program.cs file
+    builder.Services.AddDbContext<OasisContext>(opt => 
+    {
+        opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    });
+
+
+* For Code Migration command  ---> dotnet tool install --global dotnet-ef --version 7.0.13
+
+* to verify run ----> dotnet ef | dotnet tool list -g
+* to update ef -----> dotnet tool update --global dotnet-ef
+
+* Now we are ready for migrations, run --------> dotnet ef migrations add InitialCreate -o Data/Migrations
+* then to apply migration to the DB run ---------> dotnet ef database update
+
+
+
+* In Data folder create class DbInitializer.cs with the following content
+    public class DbInitializer
+        {
+            public static void Initialize(OasisContext context) {
+                if (context.Cabins.Any()) return;
+                var cabins = new List<Cabin>
+                {
+                    new Cabin
+                    {
+                        CreatedAt = DateTime.Now,
+                        Name = "Aman Sharma",
+                    }
+                };
+                foreach(var cabin in cabins)
+                {
+                    context.Cabins.Add(cabin);
+                }
+                context.SaveChanges();
+            }
+        }
+
+* In Program.cs just before last line add the following  app.Run();
+    var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<OasisContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        context.Database.Migrate();
+        DbInitializer.Initialize(context);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred during migration");
+    }
+
+
+* Then run drop the db using -----------> dotnet ef database drop   -------- now when the app starts it will automatically create db table with data without explicit ef commands
+
+
+
+* finally, add a new controller to do crud operations using above DbContext
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CabinsController : ControllerBase
+    {
+        private readonly OasisContext _context;
+        public CabinsController(OasisContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Cabin>>> GetCabins()
+        {
+            var cabins = await _context.Cabins.ToListAsync();
+            return Ok(cabins);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Cabin>> GetCabinById(int id)
+        {
+            return await _context.Cabins.FindAsync(id);
+        }
+    }
+
+
+* If CORS exception is encountered then add the followng after AddDbContext in Program.cs file
+ builder.Services.AddCors();
+
+
+* Now, to further add one to one or one to many relationship uisng Code First, added a new type Booking.cs and in that added navigation properties to make realtionship with cabin and guests
+
+* using the following command we can get migration generated and review the relationships
+    dotnet ef migrations add BookingEntityAdded
+
+* if migrations are not as expected then using the following command it can be removed
+    dotnet ef migrations remove
+
+
+* Intresting scenario, I created a table with a column name Image with datatype string to store images in it, but it needs to be altedred and datatype must change from string to varbinary(max), Directly changing the Entity class property to byte[] didnt work, I got an exception "Implicit conversion from data type nvarchar(max) to varbinary(max) is not allowed. Use the CONVERT function to run this query to alter column Image in table Cabins". Then the following was addedd to the generated migration and the issue was resolved.
+
+  protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        // Add the new column
+        migrationBuilder.AddColumn<byte[]>(
+            name: "Image_New",
+            table: "YourTableName",
+            type: "varbinary(max)",
+            nullable: true);
+
+        // Migrate data from old column to new column
+        migrationBuilder.Sql("UPDATE YourTableName SET Image_New = CONVERT(varbinary(max), Image)");
+
+        // Drop the old column
+        migrationBuilder.DropColumn(
+            name: "Image",
+            table: "YourTableName");
+
+        // Rename the new column to the original column name
+        migrationBuilder.RenameColumn(
+            name: "Image_New",
+            table: "YourTableName",
+            newName: "Image");
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        // Migration code for rolling back changes
+        // ...
+    }
+
+
+* Install Athentication and Authorization
+
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 7.0.14
+
+dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 7.0.14
+
+* Add new class User in Entities folder
+
+using Microsoft.AspNetCore.Identity;
+
+namespace API.Entities
+{
+    public class User : IdentityUser
+    {
+
+    }
+}
+
+* Next in DBContext class update the class name that is derived DbContext to IdentityDbContext
+
+using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace the_wild_oasis.Data
+{
+    public class OasisContext : IdentityDbContext<User>
+    {
+        public OasisContext(DbContextOptions options) : base(options)
+        {
+            
+        }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Cabin> Cabins { get; set; }
+        public DbSet<Guest> Guests { get; set; }
+        public DbSet<Setting> Setting { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<IdentityRole>().HasData(
+                new IdentityRole{Name= "Member", NormalizedName = "MEMBER"},
+                new IdentityRole{Name= "Admin", NormalizedName = "ADMIN"}
+            );
+        }
+    }
+}
+
+
+* update Program.cs Add builder.Services.AddCors();
+
+builder.Services.AddIdentityCore<User>().AddRoles<IdentityRole>().AddEntityFrameworkStores<OasisContext>();
+
+
+* Update DbInitializer Class
+
+using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+namespace the_wild_oasis.Data
+{
+    public class DbInitializer
+    {
+        public static async void Initialize(OasisContext context, UserManager<User> userManager)
+        {
+
+            if(!userManager.Users.Any())
+            {
+                var user = new User 
+                {
+                    UserName = "TestUser",
+                    Email = "testuser@somemail.com"  
+                };
+
+                await userManager.CreateAsync(user, "Deep@k123");
+                await userManager.AddToRoleAsync(user, "Member");
+
+                var admin = new User 
+                {
+                    UserName = "AdminUser",
+                    Email = "adminuser@somemail.com"  
+                };
+
+                await userManager.CreateAsync(admin, "Deep@k123");
+                await userManager.AddToRolesAsync(admin, new[] {"Member", "Admin"});
+            }
+
+
+
+            if (context.Cabins.Any()) return;
+
+            var cabins = new List<Cabin>
+            {
+                new Cabin
+                {
+                    CreatedAt = DateTime.Now,
+                    Name = "Aman Sharma",
+                    MaxCapacity = 2,
+                    RegularPrice= 100,
+                    Discount=0,
+                    Description= "Pro from USA",
+                    Image= null
+
+                }
+            };
+
+            foreach(var cabin in cabins)
+            {
+                context.Cabins.Add(cabin);
+            }
+
+            context.SaveChanges();
+        }
+    }
+}
+
+
+* In Program.cs 
+
+Add -> var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>(); |||||| [Below -> var context = scope.ServiceProvider.GetRequiredService<OasisContext>();]
+
+then change ----> DbInitializer.Initialize(context);   to   --------  DbInitializer.Initialize(context, userManager);
+
+
+* Add Identity Migration
+
+dotnet ef migrations add IdentityAdded
+then to apply migration to the DB run ---------> dotnet ef database update
+
+
+* Finally Create Account Controller
+
+
+using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace the_wild_oasis.Controllers;
+
+[ApiController]
+[Route("api/[controller]/[action]")]
+public class AccountController : ControllerBase
+{
+    private readonly UserManager<User> _userManager;
+
+    public AccountController(UserManager<User> userManager)
+    {
+        _userManager = userManager;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<User>> Login(LoginDto loginDto)
+    {
+        var user = await _userManager.FindByNameAsync(loginDto.UserName);
+
+        if(user == null || !await _userManager.CheckPasswordAsync(user, 
+        
+        loginDto.Password))
+        {
+            return Unauthorized();
+        }
+
+        return user;
+    }
+
+
+    [HttpPost("register")]
+    public async Task<ActionResult<User>> Register(RegisterDto registerDto)
+    {
+        var user = new User {UserName = registerDto.UserName, Email = registerDto.Email};
+
+        var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+        if(!result.Succeeded)
+        {
+            foreach(var error in result.Errors)
+            {
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+
+            return ValidationProblem();
+        }
+
+        await _userManager.AddToRoleAsync(user, "Member");
+
+        return StatusCode(201);
+    }
+
+}
+
+
+public class LoginDto 
+{
+    public string UserName { get; set; }
+    public string Password { get; set; }
+}
+
+public class RegisterDto : LoginDto
+{
+    public string Email { get; set; }
+
+}
+
+http://localhost:5000/swagger/index.html
+
+
+* Add JWT TokenService in Services folder
+
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+
+namespace API.Services
+{
+    public class TokenService
+    {
+        private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _config;
+
+        public TokenService(UserManager<User> userManager, IConfiguration config)
+        {
+            _config = config;
+            _userManager = userManager;
+        }
+
+        public async Task<string> GenerateToken(User user)
+        {
+            //claims
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
+
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+            
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWTSettings:TokenKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+
+            var tokenOptions = new JwtSecurityToken(
+                issuer: null,
+                audience: null,
+                claims: claims,
+                expires: DateTime.Now.AddDays(7),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+        }
+    }
+}
+
+
+
+public class UserDto 
+{
+    public string Email { get; set; }
+    public string Token { get; set; }
+
+}
+
+
+
+* Register this service in Program.cs
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+builder.Services.AddScoped<TokenService>();
+
+
+* Updated Account Controller
+
+
+using API.Entities;
+using API.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace the_wild_oasis.Controllers;
+
+[ApiController]
+[Route("api/[controller]/[action]")]
+public class AccountController : ControllerBase
+{
+    private readonly UserManager<User> _userManager;
+
+    private readonly TokenService _tokenService;
+    public AccountController(UserManager<User> userManager, TokenService tokenService)
+    {
+        _userManager = userManager;
+        _tokenService = tokenService;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
+    {
+        var user = await _userManager.FindByNameAsync(loginDto.UserName);
+
+        if(user == null || !await _userManager.CheckPasswordAsync(user, 
+        
+        loginDto.Password))
+        {
+            return Unauthorized();
+        }
+
+        return new UserDto
+        {
+            Email = user.Email,
+            Token = await _tokenService.GenerateToken(user)
+        };
+    }
+
+
+      [HttpPost("register")]
+    public async Task<ActionResult<User>> Register(RegisterDto registerDto)
+    {
+        var user = new User {UserName = registerDto.UserName, Email = registerDto.Email};
+
+        var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+        if(!result.Succeeded)
+        {
+            foreach(var error in result.Errors)
+            {
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+
+            return ValidationProblem();
+        }
+
+        await _userManager.AddToRoleAsync(user, "Member");
+
+        return StatusCode(201);
+    }
+
+}
+
+
+public class LoginDto 
+{
+    public string UserName { get; set; }
+    public string Password { get; set; }
+}
+
+public class RegisterDto : LoginDto
+{
+    public string Email { get; set; }
+
+}
+
+* Update App Settings
+
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Information"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=DESKTOP-EAQIJU1;Initial Catalog=OasisDB;Persist Security Info=False;User ID=sa;Password=@dministr@tor;MultipleActiveResultSets=True;Encrypt=false;Connection Timeout=30"
+  },
+  "JWTSettings": {
+    "TokenKey": "Hk7ktoMWcW5R4Zi1ngotNUZrndtbnGdrthiF1rQvRagj3PseQ5DgnxZHjswG68Bd"
+  }
+}
+
+************** Docker Setup for backend
+What you learnt, 
+
+URL: http://localhost:36789/swagger/index.html
+
+1) The Docker build context is important
+
+I apologize for the confusion. The "Docker build context" refers to the set of files at a specified location (usually a directory) that Docker uses when building a Docker image. When you run the `docker build` command, you specify a build context, which is the path to the directory containing the Dockerfile and any files needed during the build process.
+
+Here are some key points about the Docker build context:
+
+1. **Specifying Build Context:**
+   - When you run the `docker build` command, you provide the path to the build context using the `.` (dot) by default. For example:
+     ```bash
+     docker build -t myimage .
+     ```
+     Here, the `.` indicates that the current directory is the build context.
+
+2. **Contents of Build Context:**
+   - The build context includes the Dockerfile and all files and directories referenced in the Dockerfile's `COPY` or `ADD` instructions. These files are sent to the Docker daemon for building the image.
+
+3. **Build Context Size Considerations:**
+   - It's essential to be mindful of the size of the build context. All files in the build context are sent to the Docker daemon, and a large context can result in longer build times. Avoid including unnecessary files in the build context.
+
+4. **Use `.dockerignore` File:**
+   - You can create a `.dockerignore` file in the build context directory to exclude certain files or directories from being sent to the Docker daemon during the build. This helps reduce the size of the build context.
+
+Here's a simple example directory structure:
+
+```
+myapp/
+|-- Dockerfile
+|-- src/
+|   `-- main.cs
+|-- .dockerignore
+```
+
+In this example, the `myapp` directory is the build context. When you run `docker build -t myimage .`, Docker includes the `Dockerfile`, `src/`, and its contents in the build context.
+
+Remember that the build context is sent to the Docker daemon, so it's a good practice to keep it minimal and exclude unnecessary files to optimize the build process.
+
+2) below docker commad worked for the-wild-oasis
+
+docker build -f Dockerfile --force-rm -t oasis-backend:dev --build-arg "BUILD_CONFIGURATION=Debug" . 
+Powershell path was --> C:\Users\Angrish\Desktop\app\backend
+
+3) In order to run and grab repective env files use, the env variable and pass it when you are creating container using above image
+"ASPNETCORE_ENVIRONMENT=Development"
+
+we can also use, 
+docker run --name oasis-backend-container -p 32572:8080 -e ASPNETCORE_ENVIRONMENT=Development oasis-backend:dev
+
+docker ps -a
+
+docker stop oasis-container
+docker start oasis-container
+docker rm oasis-container
+
+
+
+*********************************************************************KIBANA elasticsearch
+*********************************************************************
+First go to http://localhost:5601/login?next=%2F
+
+This is Kibana Dashboard
+
+Then Run below in ES exex container
+elasticsearch-create-enrollment-token --scope kibana
+
+then run below in Kibana container
+kibana-verification-code
+Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/8.12/production.html#openssl-legacy-provider
+Your verification code is:  470 595
+
+Username/Password
+elastic/changeme
+
+I couldnt find the password so I exec into ES and ran elasticsearch-reset-password from /usr/share/elasticsearch/bin
+Password for the [elastic] user successfully reset.
+New value: *w37enRL8Q11k2Gf9x8W
+
+*********************************************************************This is how cert was generated for NGINX
+*********************************************************************
+This is how cert was generated for NGINX
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout id-local.key -out id-local.crt -config id-local.conf -passin pass:MyStrongPassword
+
+
+openssl pkcs12 -export -out id-local.pfx -inkey id-local.key -in id-local.crt
+
+Make sure this cert is installed in certmgr.msc -> Trusted Root Certification Authorities
+
+-------------------------------------------------------------
+-------------------------------------------------------------
+                        FRONTEND
+-------------------------------------------------------------
+-------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+==============================================================
+Next JS Commands Starts
+==============================================================
+
+* NextJS  => npx create-next-app@latest => nextjs-blog-app
+
+npm install react-markdown
+==============================================================
+Next JS Commands ENDS
+==============================================================
+
+
+
+
+
+==============================================================
+React JS Commands Starts
+==============================================================
+* ReactJS => => npx create-react-app reactjs-the-sanctum-app || npm create vite@latest reactjs-the-sanctum-app
+
+    npm install @tanstack/react-query@4
+
+    npm install @tanstack/react-query-devtools@4
+
+    npm install react-hot-toast
+
+    npm install react-hook-form@7
+
+    npm install react-icons
+
+    npm i date-fns
+
+    npm i recharts@2
+
+    npm i react-error-boundary
+
+    npm install && npm run dev
+
+    DOCKER 
+            -- docker build -f Dockerfile --force-rm -t oasis-frontend:dev .
+            -- docker run -p 3009:3000 oasis-frontend:dev
+
+==============================================================
+React JS Commands ENDS
+==============================================================    
+
+
+
+
+
+==============================================================
+Angular Commands Starts
+==============================================================  
+* Angular => Recipe App => ng new angular-recipe-app
+==============================================================
+Angular Commands ENDS
+==============================================================  
+
+

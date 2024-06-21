@@ -1,0 +1,28 @@
+* mkdir py_flask_api
+
+
+* cd py_flask_api
+
+
+* code .
+
+* open the Command Palette (View > Command Palette or (Ctrl+Shift+P)). Then select the Python: Create Environment command to create a virtual environment in your workspace. Select venv and then the Python environment you want to use to create it.
+
+* cd .venv
+
+* python -m pip install flask
+
+* create app.py, add below code
+
+from flask import Flask
+app = Flask(__name__)
+
+
+@app.route("/")
+def home():
+    return "Hello, Flask!"
+
+
+
+* cd on level up to get out of .venv and run
+python -m flask run

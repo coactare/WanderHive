@@ -1,0 +1,55 @@
+<button class="back-button" (click)="moveBack()">&larr; Back</button>
+<!-- <ng-container *ngIf="data$ | async as data"> -->
+
+
+<ng-container *ngIf="initialValues$ | async as initialValues">
+    <ng-container *ngIf="data$ | async as data">
+        <mc-loading *ngIf="data.isLoading"></mc-loading>
+        <div>
+            <!-- <mc-backend-error-messages *ngIf="data.backendErrors"
+            [backendErrors]="data.backendErrors"></mc-backend-error-messages> -->
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="form-div">
+                    <label>Enter Brand Name</label>
+                    <input type="text" id="brandname" formControlName="brandname" />
+                </div>
+
+                <div class="form-div">
+                    <label>Enter Product Type</label>
+                    <input type="text" id="producttype" formControlName="producttype" />
+                </div>
+
+                <div class="form-div">
+                    <label>Enter Product Name</label>
+                    <input type="text" id="productname" formControlName="productname" />
+                </div>
+
+                <div class="form-div">
+                    <label>Enter Product Summary</label>
+                    <input type="text" id="productsummary" formControlName="productsummary" />
+                </div>
+
+                <div class="form-div">
+                    <label>Enter Product Description</label>
+                    <textarea type="text" id="productdescription" formControlName="productdescription">
+                </textarea>
+                </div>
+
+                <div class="form-div">
+                    <label>Price</label>
+                    <input type="number" id="price" formControlName="price" />
+                </div>
+
+                <div class="form-div">
+                    <label>Product Photo</label>
+                    <input (change)="onFileChange($event)" type="file" accept="image/*" id="image" accept="image/*"
+                        formControlName="image" />
+                </div>
+
+                <button type="submit" [disabled]="data.isSubmitting">Submit</button>
+                <button (click)="clearFrom()">Clear</button>
+            </form>
+        </div>
+    </ng-container>
+</ng-container>

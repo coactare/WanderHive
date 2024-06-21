@@ -1,0 +1,96 @@
+:host {
+  grid-row: 1 / -1;
+  /* Span this from first row to last one */
+  /* padding: 0.5rem; */
+  display: flex;
+  flex-direction: column;
+  
+  background-color: #343957;
+  /* NEW ADDED */
+}
+
+.styled-nav {
+  margin-top: 2rem;
+
+}
+
+.StyledLogoDiv {
+  /*
+  background: linear-gradient(90deg,
+      oklch(63.32% 0.24 31.68) 0%,
+      oklch(69.02% 0.277 332.77) 50%,
+      oklch(53.18% 0.28 296.97) 100%
+    );
+    */
+  background-color: #6b51df;
+
+  height: 6rem;
+  
+
+  /* width: 15rem; */
+
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 2.5rem;
+
+  font-weight: 600;
+
+}
+
+.StyledNavListUl {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.8rem;
+  list-style: none;
+}
+
+
+.StyledNavLinka {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  padding: 1.2rem 2.4rem;
+  transition: all 0.6s;
+  text-decoration: none;
+  color: #bdbdc7;
+  ;
+
+}
+
+
+.StyledNavLinka:hover,
+.StyledNavLinka:active,
+.StyledNavLinka.active:link,
+.StyledNavLinka.active:visited {
+  /* color: var(--color-grey-800);
+  background-color: var(--color-grey-50); */
+
+  border-radius: 6px;
+  text-decoration: none;
+  
+  color: #fff;
+  box-shadow: inset 400px 0 0 0 #6b51df;
+  
+}
+
+/* .StyledNavLinka svg {
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--color-grey-400);
+  transition: all 0.3s;
+} */
+
+/* .StyledNavLinka:hover svg,
+.StyledNavLinka:active svg,
+.StyledNavLinka.active:link svg,
+.StyledNavLinka.active:visited svg {
+  color: var(--color-brand-600);
+} */
+

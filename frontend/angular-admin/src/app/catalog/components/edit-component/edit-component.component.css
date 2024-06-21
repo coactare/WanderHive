@@ -1,0 +1,78 @@
+.t {
+    background-color: black;
+}
+
+input {
+    border: 1px solid #d1d5db;
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 0.8rem 1.2rem;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.form-div {
+    display: grid;
+    align-items: center;
+    grid-template-columns: 24rem 1fr 1.2fr;
+    gap: 2.4rem;
+
+    padding: 1rem 0;
+
+    &:first-child {
+        padding-top: 0;
+    }
+
+    &:last-child {
+        padding-bottom: 0;
+    }
+
+    &:not(:last-child) {
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    &:has(button) {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.2rem;
+    }
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+button {
+    background: #6b51df;
+    border: none;
+    color: white;
+    padding: 1rem;
+    width: auto;
+    margin: 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 100px;
+}
+
+.back-button {
+
+    color: #6b51df;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s;
+    background: none;
+    border: none;
+    border-radius: 5px;
+    padding-bottom: 5rem;
+    display: flex;
+    flex-direction: row;
+    
+    &:hover,
+    &:active {
+        color: #4338ca;
+    }
+}
+
+#productdescription{
+    height: 12rem;
+    width: 28rem;
+}
