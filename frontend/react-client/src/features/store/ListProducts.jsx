@@ -262,16 +262,16 @@ function ListProducts() {
             </Section>
             <Section>
                 <div>
-                    <Pagination count={catalogs?.data?.count} />
+                    <Pagination count={catalogs?.count} />
                     {/* <SearchContainer>
                             <Input type="text" placeholder="Search" />
                             <ButtonIcon><HiSearch /></ButtonIcon>
                             <ButtonIcon><HiBackspace /></ButtonIcon>
                         </SearchContainer> */}
                     <Grid>
-                        {catalogs?.data?.data &&
+                        {catalogs?.data &&
 
-                            catalogs?.data?.data?.map(catalog => (
+                            catalogs?.data?.map(catalog => (
                                 <Item onClick={() => navigate(`/product-details/${catalog.id}`)} key={catalog.id}>
                                     <ItemDisplay>
                                         <Img src={`data:image/jpeg;base64,${catalog.image}`} alt="Base64 Image" />

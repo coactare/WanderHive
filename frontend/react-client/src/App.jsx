@@ -26,33 +26,35 @@ const queryClient = new QueryClient({
 function App() {
 
   return (
-    <DarkModeProvider>
-      <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <DarkModeProvider>
+        <Provider store={store}>
 
-        <QueryClientProvider client={queryClient}>
+
           <GlobalStyles />
           <OidcProvider configuration={is4} >
-          <BrowserRouter>
-            <Routes>
-              <Route element={<OidcSecure><MainAppLayout /></OidcSecure>}>
-                {/* <Route index element={<Navigate replace to="home" />} /> */}
-                <Route path="home" element={<Home />} />
-                <Route path="store" element={<Store />} />
-                <Route path="product-details/:productId" element={<ProductDetail />} />
-                {/* <Route path="checkout" element={<Checkout />} /> */}
-                <Route path="cart-details" element={<CartDetails />} />
+            <BrowserRouter>
+              <Routes>
+                <Route element={<OidcSecure><MainAppLayout /></OidcSecure>}>
+                  {/* <Route index element={<Navigate replace to="home" />} /> */}
+                  <Route path="home" element={<Home />} />
+                  <Route path="store" element={<Store />} />
+                  <Route path="product-details/:productId" element={<ProductDetail />} />
+                  {/* <Route path="checkout" element={<Checkout />} /> */}
+                  <Route path="cart-details" element={<CartDetails />} />
 
 
-              </Route>
-              <Route index element={<Navigate replace to="login" />} />
-              <Route path="login" element={<Login />} />
-              <Route path="*" element={<PageNotFound />} />
-            </Routes>
-          </BrowserRouter>
+                </Route>
+                <Route index element={<Navigate replace to="login" />} />
+                <Route path="login" element={<Login />} />
+                <Route path="*" element={<PageNotFound />} />
+              </Routes>
+            </BrowserRouter>
           </OidcProvider>
-        </QueryClientProvider>
-      </Provider>
-    </DarkModeProvider>
+
+        </Provider>
+      </DarkModeProvider>
+    </QueryClientProvider>
 
   );
 }

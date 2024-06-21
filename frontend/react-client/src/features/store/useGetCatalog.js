@@ -2,6 +2,7 @@ import { getCatalog } from '../../services/apiCatalog';
 import { useSearchParams } from "react-router-dom";
 import { PAGE_SIZE } from "../../utils/constants";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+
 export function useGetCatalog() {
 
     const [searchParams] = useSearchParams();

@@ -58,7 +58,6 @@ function CabinRow({ catalog, totalPrice }) {
 
   const handleRemoveFromCart = (productId) => {
 
-    alert(1);
     console.log(productId);
     //dispatch(removeItemFromLocalCart({ productId }));
     //dispatch(removeItemFromServerCart());

@@ -42,9 +42,20 @@ export async function add_editCatalogItem(catalogItem) {
 export async function getCatalog(queryParams) {
 
     try {
-        const url = apiUrl() + `Catalog/GetAllProductsAllowAnonymous?${queryParams}`;
+        const url = apiUrl() + `Catalog/GetAllProducts?${queryParams}`;
 
-        const response = await fetch(url);
+        var access_token = localStorage.getItem('access_token');
+        
+        const headers = new Headers({
+            'Authorization': `Bearer ${access_token}`,
+        });
+    
+        const requestOptions = {
+            method: 'GET', 
+            headers: headers
+        };
+
+        const response = await fetch(url, requestOptions);
 
         if (!response.ok) {
             throw new Error('Network response was not ok');

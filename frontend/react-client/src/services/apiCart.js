@@ -6,8 +6,6 @@ import apiUrl from '../services/apiUrl';
 
 let basketSource = [{}];
 
-
-
 //const { counterValue, title } = useAppSelector(state => state.basket);
 
 
