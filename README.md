@@ -71,6 +71,10 @@ The project will be structured as a collection of loosely coupled microservices,
    - Client App: http://localhost:5173
    - Backend : https://localhost:9010/
 
+5. **For Login use** 
+    username: sharma
+    password: sharma
+
 ## Contributing
 
 Contributions to the project are welcome! If you encounter any issues or have suggestions for improvements, please feel free to submit a pull request or open an issue on the repository.
