@@ -6,7 +6,7 @@ trigger:
     include:
     - develop
     exclude:
-    - master  
+    - main  
   paths:
     include:
     - backend/ApiGateways/Ocelot.ApiGateway/* 
