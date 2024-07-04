@@ -1,0 +1,67 @@
+variables:
+  repoName: 'ocelot-api-gateway-image'
+
+trigger:
+  branches:
+    include:
+    - develop
+    exclude:
+    - master  
+  paths:
+    include:
+    - backend/ApiGateways/Ocelot.ApiGateway/* 
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: 'backend/ApiGateways/Ocelot.ApiGateway/Ocelot.ApiGateway.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    projects: 'backend/ApiGateways/Ocelot.ApiGateway/Ocelot.ApiGateway.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    projects: 'backend/ApiGateways/Ocelot.ApiGateway/Ocelot.ApiGateway.csproj'
+    publishWebProjects: false
+    arguments: '-c Release -r linux-x64 /p:PublishReadyToRun=true --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: false
+  
+- task: Docker@2
+  displayName: Login
+  inputs:
+    command: login
+    containerRegistry: containerregistry-service-connection
+
+- task: Docker@2
+  displayName: Build and Push
+  inputs:
+    command: buildAndPush
+    repository: $(repoName)
+    dockerFile: backend/ApiGateways/Ocelot.ApiGateway/Dockerfile
+    defaultContext: false
+    buildContext:  $(Build.ArtifactStagingDirectory)/Ocelot.ApiGateway/
+    containerRegistry: containerregistry-service-connection
+    tags: |
+     $(Build.BuildId)
+     latest
+    
+- task: Docker@2
+  displayName: Logout
+  inputs:
+    command: logout
+    containerRegistry: containerregistry-service-connection
+
+- task: Bash@3
+  displayName: Print Build Id
+  inputs:
+    targetType: 'inline'
+    script: echo 'Build Id $(Build.BuildId)'     
