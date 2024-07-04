@@ -1,11 +1,4 @@
-<div class="tile">
-  <ngx-charts-bar-horizontal [view]="view" [results]="single" [gradient]="gradient" [xAxis]="showXAxis"
-    [yAxis]="showYAxis" [legend]="showLegend" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
-    [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel" (select)="onSelect($event)" (activate)="onActivate($event)"
-    (deactivate)="onDeactivate($event)">
-  </ngx-charts-bar-horizontal>
 
-</div>
 <div class="tile">
   <ngx-charts-bar-vertical [view]="view" [results]="single" [gradient]="gradient" [xAxis]="showXAxis"
   [yAxis]="showYAxis" [legend]="showLegend" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
@@ -14,21 +7,6 @@
   </ngx-charts-bar-vertical>
 </div>
 
-<div class="tile">
-<ngx-charts-pie-chart
-  [view]="view"
-  [results]="single"
-  [gradient]="gradient"
-  [legend]="showLegend"
-  
-  [labels]="showLabels"
-  [doughnut]="isDoughnut"
-  (select)="onSelect($event)"
-  (activate)="onActivate($event)"
-  (deactivate)="onDeactivate($event)"
-  >
-</ngx-charts-pie-chart>
-</div>
 
 <div class="tile">
 <ngx-charts-pie-grid

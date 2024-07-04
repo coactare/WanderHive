@@ -1,8 +1,5 @@
-
-
 import { Component } from '@angular/core';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
-import { Color } from '@swimlane/ngx-charts';
 import { AcntService } from '../../../account/acnt.service';
 
 @Component({
@@ -15,18 +12,18 @@ import { AcntService } from '../../../account/acnt.service';
 })
 export class ViewDashboardComponent {
   data = [
-    { "name": "Germany", "value": 40632, "extra": { "code": "de" } },
-    { "name": "United States", "value": 50000, "extra": { "code": "us" } },
-    { "name": "France", "value": 36745, "extra": { "code": "fr" } },
-    { "name": "United Kingdom", "value": 36240, "extra": { "code": "uk" } },
-    { "name": "Spain", "value": 33000, "extra": { "code": "es" } },
-    { "name": "Italy", "value": 35800, "extra": { "code": "it" } }
+    { "name": "Football", "value": 12},
+    { "name": "Shoes", "value": 20},
+    { "name": "Basketball", "value": 100},
+    { "name": "Cricket Ball", "value": 50},
+    { "name": "Jackets", "value": 30},
+    // { "name": "Italy", "value": 35800, "extra": { "code": "it" } }
   ];
 
 
   single = this.data.slice(); // Initialize single with a copy of data
   //view: [number, number] = [700, 400];
-  view: [number, number] = [445, 350];
+  view: [number, number] = [800, 300];
 
   // Chart options
   showXAxis = true;
@@ -34,17 +31,15 @@ export class ViewDashboardComponent {
   gradient = false;
   showXAxisLabel = true;
   showYAxisLabel = true;
-  xAxisLabel = 'Population';
+  xAxisLabel = 'Sales';
   showLabels: boolean = true;
-  yAxisLabel = 'Country';
+  yAxisLabel = 'Products';
   scheme: string[] = [];
 
 
   showLegend: boolean = true;
   isDoughnut: boolean = false;
   legendPosition: string = 'below';
-
-
 
   constructor(private acntService: AcntService) { }
 
